@@ -1,0 +1,102 @@
+import fileUpload from "express-fileupload";
+
+
+
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
+
+
+
+import ffmpeg from "fluent-ffmpeg";
+
+ffmpeg.setFfmpegPath("C:/ffmpeg/bin/ffmpeg");
+
+ffmpeg.setFfprobePath("C:/ffmpeg/bin/ffprobe");
+
+ffmpeg("video.mp4")
+  .on("end", function () {
+    console.log("Screenshots taken");
+  })
+
+  .on("error", function (err) {
+    console.error("this error:");
+
+    console.error(err);
+  });
+
+const uploadVideo = function (req, res) {
+  let outputPathSmall = "uploads/480/";
+  let outputPathMed = "uploads/768/";
+  let outputPathLar = "uploads/1080/";
+
+  var command = ffmpeg()
+    .input(req.file.path)
+    .videoCodec("libx264")
+    .output(outputPathLar + req.file.filename)
+    .size("1080x?")
+
+    .output(outputPathMed + req.file.filename)
+    .size("768x?")
+
+    .output(outputPathSmall + req.file.filename)
+    .size("320x?")
+
+    .on("end", function () {
+      console.log("Videos converted");
+    })
+    .on("error", function (err) {
+      console.error("this error:");
+      console.error(err);
+    })
+    .exec(); //.run()
+};
+
+
+
+
+
+ console.log(path)
+  const stat = fs.statSync(path)
+  const fileSize = stat.size
+  const range = req.headers.range
+
+  if (range) {
+    const parts = range.replace(/bytes=/, "").split("-")
+    const start = parseInt(parts[0], 140)
+    const end = parts[1]
+      ? parseInt(parts[1], 140)
+      : fileSize-1
+
+    if(start >= fileSize) {
+      res.status(416).send('Requested range not satisfiable\n'+start+' >= '+fileSize);
+      return
+    }
+    
+    const chunksize = (end-start)+1
+    const file = fs.createReadStream(path, {start, end})
+    const head = {
+      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': chunksize,
+      'Content-Type': 'video/mp4',
+    }
+
+    res.writeHead(206, head)
+    file.pipe(res)
+  } else {
+    const head = {
+      'Content-Length': fileSize,
+      'Content-Type': 'video/mp4',
+    }
+    res.writeHead(200, head)
+    fs.createReadStream(path).pipe(res)
+  }
+  
+
+   <% videoLink.forEach(video=> { %>
+        <a href="<%= video.video_Url %> ">a</a>
+        <% }) %>
